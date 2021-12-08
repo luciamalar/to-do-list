@@ -8,7 +8,7 @@ export class List {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ unique: true })
+    @Column()
     title: string;
 
     @ManyToMany(type => User, author => author.lists)

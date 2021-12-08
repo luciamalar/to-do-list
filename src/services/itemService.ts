@@ -76,6 +76,10 @@ const updateItem = async (itemId: number, status: string) => {
 
     let item: Item = await getItemById(itemId);
 
+    if (!item) {
+        throw ApiError.badRequest("Item does not exist");
+    }
+
     item.status = status
 
     return await itemRepo.save(item).catch((err) => {

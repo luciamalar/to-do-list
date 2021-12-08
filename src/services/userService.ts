@@ -8,8 +8,11 @@ import ApiError from "../error/apiError";
 const NAMESPACE = "User";
 
 const createUser = async (username: string, password: string) => {
-
     const userRepo = getRepository(User);
+    const userExists = getUser(username);
+    if (userExists) {
+        throw ApiError.badRequest("User already exists");
+    }
     let user = userRepo.create({ username, password });
     await userRepo.save(user).then((user1) => user = user1).catch((err) => {
         throw ApiError.internalServerError(err.message);
@@ -24,10 +27,14 @@ const loginUser = async (username: string, password: string) => {
     await userRepo
         .findOne({ where: { username } })
         .then((user1) => {
-            user = user1;
+            if (!user1) {
+                throw ApiError.badRequest("User have to be registered to log in");
+            } else {
+                user = user1;
+            }
         })
         .catch((err) => {
-            throw ApiError.badRequest(err.message);
+            throw err;
         });
 
     await bcryptjs.compare(password, user.password).then((result) => {

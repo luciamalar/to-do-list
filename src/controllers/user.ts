@@ -20,8 +20,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
             if (user) {
                 logging.info(NAMESPACE, "User registered", user);
                 return res.json({
-                    message: "User registered",
-                    user: user
+                    message: "User registered"
                 })
             }
         }).catch((err) => {
@@ -42,7 +41,6 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         })
     }).catch((err) => {
         next(err);
-        return;
     });
 };
 

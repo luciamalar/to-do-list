@@ -7,10 +7,19 @@ import ApiError from "../error/apiError";
 const NAMESPACE = "List";
 
 const createList = async (title: string, user: User) => {
+    const listRepo = getRepository(List);
+    const foundlist: List = await listRepo.findOne({ where: { title: title } });
+
+    console.log(foundlist);
+    //check if list with that title already exists
+    if (foundlist) {
+        throw ApiError.badRequest(`List with this title already exists`);
+    }
+
     let list: List = new List();
 
-    list.title = title,
-        list.author = Promise.resolve(user);
+    list.title = title;
+    list.author = Promise.resolve(user);
 
     return list;
 }
@@ -20,20 +29,26 @@ const assignListToUser = async (user: User, list: List) => {
 
     (await user.lists).push(list);
 
-    await userRepo.save(user).catch((err) => {
+    try {
+        await userRepo.save(user);
+    } catch {
         throw ApiError.internalServerError(`Error while assigning list: ${list.title} to user: ${user.username}`);
-    });
+    }
 
-    return user;
+    return list;
+
 }
 
 const getListById = async (listId: number) => {
     const listRepo = getRepository(List);
     try {
         const list: List = await listRepo.findOne({ where: { id: listId } });
-        return list;
+        if (list)
+            return list;
+        else
+            throw ApiError.notFound(`No list found of id: ${listId}.`)
     } catch (err) {
-        throw ApiError.notFound(`No list found of id: ${listId}.`);
+        throw err;
     }
 }
 

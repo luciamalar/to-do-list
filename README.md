@@ -44,24 +44,14 @@ If the installation was successful, you should be able to run the following comm
 
       $ sudo mysql_secure_installation
 
+In case your database is running on docker, add this flag while running the container.
+
+        $ flag --default-authentication-plugin=mysql_native_password
+
 If the installation was successful, you should be able to run the following command.
 
     $ mysql --version
     Ver 8.0.27
-
-### TypeORM
-- #### TypeORM installation on Windows
-
-      $ npm install typeorm
-
-- #### Node installation on Ubuntu
-
-      $ sudo npm install typeorm
-
-If the installation was successful, you should be able to run the following command.
-
-    $ typeorm --version
-    0.2.41
 
 ## Install
 
@@ -71,15 +61,23 @@ If the installation was successful, you should be able to run the following comm
 
 ## Configure app
 
-Open `/ormconfig.json` then edit it with your settings. You will need:
+Open `/ormconfig.json` then edit it with your database settings. You will need:
 
 - Port to connect to your database;
-- Username and password to connect to your database;
-- Database name;
+- Username and password to connect to your database/ username must already exist in the db;
+- Database name/ database have to already exist;
 
 Open `/config/config.ts` then edit it with your settings:
 
 - Change DBURI to `mysql://localhost:DATABASE_PORT/DATABASE_NAME`
+
+## Running database migration
+
+Run one of the following commands
+
+    $ ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run
+
+    $ typeorm migration:run
 
 ## Running the project
 

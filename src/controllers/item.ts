@@ -12,6 +12,10 @@ async function canEdit(username: string, id: number, type: string) {
         const lists = await listService.getListsOfUser(username);
         const item = await itemService.getItemById(id);
 
+        if (!item && type == "item") {
+            throw ApiError.badRequest("Item does not exist");
+        }
+
         if (type == 'item') {
             for (var i = 0; i < lists.length; i++) {
                 if ((await item.list).id == lists[i].id)
@@ -28,7 +32,7 @@ async function canEdit(username: string, id: number, type: string) {
             throw ApiError.badRequest("Incorrect type value. Can be item or list")
         }
     } catch (err) {
-        throw ApiError.internalServerError(err);
+        throw err;
     }
 }
 
@@ -47,7 +51,8 @@ const createItem = async (req: Request, res: Response, next: NextFunction) => {
                     itemService.assignItemtoList(item, list).then((response) => {
                         if (response) {
                             return res.json({
-                                message: `Item: ${item.title} attached to list: ${list.title}`
+                                message: `Item: ${item.title} attached to list: ${list.title}`,
+                                itemId: item.id
                             })
                         } else {
                             throw ApiError.internalServerError("Could not attach item to list");
@@ -70,16 +75,16 @@ const createItem = async (req: Request, res: Response, next: NextFunction) => {
 
 const activate = async (req: Request, res: Response, next: NextFunction) => {
 
-    const { itemId, title, description, deadline, status } = await req.body;
+    const { id } = req.params;
 
     try {
-        const canUpdate = await canEdit(req.body.username, itemId, "item");
+        const canUpdate = await canEdit(req.body.username, Number(id), "item");
 
         if (!canUpdate) {
             next(ApiError.badRequest("User has to be owner of list to update item of the list"));
             return;
         } else {
-            const item = await itemService.updateItem(itemId, 'active');
+            const item = await itemService.updateItem(Number(id), 'active');
             if (item) {
                 return res.json({
                     message: "Status set to 'active'",
@@ -96,16 +101,16 @@ const activate = async (req: Request, res: Response, next: NextFunction) => {
 
 const cancel = async (req: Request, res: Response, next: NextFunction) => {
 
-    const { itemId, title, description, deadline, status } = await req.body;
+    const { id } = req.params;
 
     try {
-        const canUpdate = await canEdit(req.body.username, itemId, "item");
+        const canUpdate = await canEdit(req.body.username, Number(id), "item");
 
         if (!canUpdate) {
             next(ApiError.badRequest("User has to be owner of list to update item of the list"));
             return;
         } else {
-            const item = await itemService.updateItem(itemId, 'cancelled');
+            const item = await itemService.updateItem(Number(id), 'cancelled');
             if (item) {
                 return res.json({
                     message: "Status set to 'cancelled'",
@@ -122,16 +127,16 @@ const cancel = async (req: Request, res: Response, next: NextFunction) => {
 
 const done = async (req: Request, res: Response, next: NextFunction) => {
 
-    const { itemId, title, description, deadline, status } = await req.body;
+    const { id } = req.params;
 
     try {
-        const canUpdate = await canEdit(req.body.username, itemId, "item");
+        const canUpdate = await canEdit(req.body.username, Number(id), "item");
 
         if (!canUpdate) {
             next(ApiError.badRequest("User has to be owner of list to update item of the list"));
             return;
         } else {
-            const item = await itemService.updateItem(itemId, 'done');
+            const item = await itemService.updateItem(Number(id), 'done');
             if (item) {
                 return res.json({
                     message: "Status set to 'done'",

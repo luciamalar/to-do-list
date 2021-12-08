@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { List } from "./List";
 
 export type StatusType = "active" | "done" | "cancelled";
