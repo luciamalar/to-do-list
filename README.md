@@ -65,8 +65,8 @@ If the installation was successful, you should be able to run the following comm
 
 ## Install
 
-    $ git clone https://github.com/YOUR_USERNAME/PROJECT_TITLE
-    $ cd ToDoList
+    $ git clone https://github.com/luciamalar/to-do-list.git
+    $ cd to-do-list
     $ npm install
 
 ## Configure app
