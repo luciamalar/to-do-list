@@ -73,7 +73,7 @@ Open `/config/config.ts` then edit it with your settings:
 
 ## Running database migration
 
-Run one of the following commands
+Run `one` of the following commands
 
     $ ts-node --transpile-only ./node_modules/typeorm/cli.js migration:run
 
@@ -86,3 +86,7 @@ Run one of the following commands
 ## Simple build for production
 
     $ npm build
+
+## Run swagger documentation on adress
+
+    http://localhost:5000/api-docs/
