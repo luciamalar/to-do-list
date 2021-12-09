@@ -13,8 +13,8 @@ export const expressValidator = (req: Request, res: Response, next: NextFunction
 
 export const registerValidator = [
 	body('id').isEmpty(),
-	body('username').isString().withMessage('username is not valid'),
-	body('password').isLength({ min: 3 }).withMessage('password must have at least 3 characters')
+	body('username').notEmpty().isString().withMessage('username is not valid'),
+	body('password').notEmpty().isLength({ min: 3 }).withMessage('password must have at least 3 characters')
 ]
 
 export const loginValidator = [
@@ -31,9 +31,9 @@ export const createListValidator = [
 export const createItemValidator = [
 	body('listId').notEmpty().isNumeric(),
 	body('title').notEmpty().isString().withMessage('title is not valid'),
-	body('description').isString().withMessage('description is not valid'),
-	body('deadline').isDate().withMessage('deadline is not valid'),
-	body('status').isString().withMessage('status is not valid'),
+	body('description').notEmpty().isString().withMessage('description is not valid'),
+	body('deadline').notEmpty().isDate().withMessage('deadline is not valid'),
+	body('status').notEmpty().isString().withMessage('status is not valid'),
 ]
 
 export const flagItemValidator = [
