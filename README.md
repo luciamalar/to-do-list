@@ -87,6 +87,6 @@ Run `one` of the following commands
 
     $ npm build
 
-## Run swagger documentation on adress
+## Run swagger documentation on address
 
     http://localhost:5000/api-docs/
