@@ -7,6 +7,7 @@
    "database": "to_do_list",
    "synchronize": false,
    "logging": false,
+   "migrationsRun": true,
    "entities": [
       "src/entity/**/*.{ts,js}"
    ],
