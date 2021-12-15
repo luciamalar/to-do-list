@@ -24,9 +24,9 @@ const assignItemtoList = async (item: Item, list: List) => {
 const getItemsOfList = async (listId: number) => {
 
     const listRepo = getRepository(List);
-
+    let list: List;
     try {
-        var list: List = await listRepo.findOne({ where: { id: listId } });
+        list = await listRepo.findOne({ where: { id: listId } });
         return list.items;
     } catch (err) {
         throw ApiError.notFound(`No items found for list: ${list.title}.`);
@@ -63,15 +63,16 @@ const getItemById = async (itemId: number) => {
 const getAllItemsOfList = async (listId: number) => {
     const listRepo = getRepository(List);
 
+    let list: List;
     try {
-        var list = await listRepo.findOne({ where: { id: listId } });
+        list = await listRepo.findOne({ where: { id: listId } });
         return list.items
     } catch (err) {
         throw ApiError.notFound(`No items found}.`);
     }
 }
 
-const updateItem = async (itemId: number, status: string) => {
+const updateItem = async (itemId: number, title: string, description: string, deadline: Date, status: string) => {
     const itemRepo = getRepository(Item);
 
     let item: Item = await getItemById(itemId);
@@ -80,7 +81,10 @@ const updateItem = async (itemId: number, status: string) => {
         throw ApiError.badRequest("Item does not exist");
     }
 
-    item.status = status
+    item.title = title,
+        item.description = description,
+        item.deadline = deadline,
+        item.status = status
 
     return await itemRepo.save(item).catch((err) => {
         throw ApiError.internalServerError(err.message);

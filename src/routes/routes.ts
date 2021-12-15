@@ -297,9 +297,9 @@ const loadRoutes = async (app: express.Application) => {
 
     /**
      * @swagger
-     * /item/{id}/activate/:
+     * /item/{id}/update/:
      *      put:
-     *          summary: Set item status to active
+     *          summary: Updates provided item
      *          tags: [Item]
      *          parameters:
      *              - in: header
@@ -311,6 +311,13 @@ const loadRoutes = async (app: express.Application) => {
      *                required: true
      *                schema:
      *                  type: number
+     *          requestBody:
+     *              description: Item properties to update
+     *              required: true
+     *              content:
+     *                  application/json:
+     *                      schema:
+     *                          $ref: '#/components/schemas/Item'
      *          responses:
      *              200: 
      *                  description: Status of item set to active
@@ -329,93 +336,11 @@ const loadRoutes = async (app: express.Application) => {
      *                                                             
      */
 
-    app.put('/item/:id/activate',
+    app.put('/item/:id/update',
         checkJwt,
         flagItemValidator,
         expressValidator,
-        item_controller.activate
-    );
-
-    /**
-     * @swagger
-     * /item/{id}/cancel:
-     *      put:
-     *          summary: Set item status to canceled
-     *          tags: [Item]
-     *          parameters:
-     *              - in: header
-     *                name: auth
-     *                schema:
-     *                  type: string
-     *              - in: path
-     *                name: id
-     *                required: true
-     *                schema:
-     *                  type: number
-     *          responses:
-     *              200: 
-     *                  description: Status of item set to canceled
-     *                  content:
-     *                      application/json:
-     *                          schema: 
-     *                              type: object
-     *                              properties:
-     *                                  message:
-     *                                      type: string
-     *                                  item:
-     *                                      type: object
-     *                                      $ref: '#/components/schemas/Item' 
-     *              400:
-     *                  description: Something went wrong 
-     *                                                             
-     */
-
-    app.put('/item/:id/cancel',
-        checkJwt,
-        flagItemValidator,
-        expressValidator,
-        item_controller.cancel
-    );
-
-    /**
-     * @swagger
-     * /item/{id}/done:
-     *      put:
-     *          summary: Set item status to done
-     *          tags: [Item]
-     *          parameters:
-     *              - in: header
-     *                name: auth
-     *                schema:
-     *                  type: string
-     *              - in: path
-     *                name: id
-     *                required: true
-     *                schema:
-     *                  type: number
-     *          responses:
-     *              200: 
-     *                  description: Status of item set to done
-     *                  content:
-     *                      application/json:
-     *                          schema: 
-     *                              type: object
-     *                              properties:
-     *                                  message:
-     *                                      type: string
-     *                                  item:
-     *                                      type: object
-     *                                      $ref: '#/components/schemas/Item'  
-     *              400:
-     *                  description: Something went wrong 
-     *                                                             
-     */
-
-    app.put('/item/:id/done',
-        checkJwt,
-        flagItemValidator,
-        expressValidator,
-        item_controller.done
+        item_controller.updateItem
     );
 
     /**

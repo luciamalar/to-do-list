@@ -1,5 +1,4 @@
-import { Request, Response, NextFunction } from "express";
-import { getRepository, Repository } from "typeorm";
+import { getRepository } from "typeorm";
 import { User } from "../entity/User";
 import bcryptjs from 'bcryptjs'
 import signJWT from "../utils/signJWT";

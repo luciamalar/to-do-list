@@ -12,19 +12,19 @@ async function canEdit(username: string, id: number, type: string) {
         const lists = await listService.getListsOfUser(username);
         const item = await itemService.getItemById(id);
 
-        if (!item && type == "item") {
+        if (!item && type === "item") {
             throw ApiError.badRequest("Item does not exist");
         }
 
-        if (type == 'item') {
-            for (var i = 0; i < lists.length; i++) {
-                if ((await item.list).id == lists[i].id)
+        if (type === 'item') {
+            for (let i = 0; i < lists.length; i++) {
+                if ((await item.list).id === lists[i].id)
                     return true;
             }
             return false;
-        } else if (type == 'list') {
-            for (var i = 0; i < lists.length; i++) {
-                if (lists[i].id == id)
+        } else if (type === 'list') {
+            for (let i = 0; i < lists.length; i++) {
+                if (lists[i].id === id)
                     return true;
             }
             return false;
@@ -73,9 +73,10 @@ const createItem = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-const activate = async (req: Request, res: Response, next: NextFunction) => {
+const updateItem = async (req: Request, res: Response, next: NextFunction) => {
 
     const { id } = req.params;
+    const { title, description, deadline, status } = await req.body;
 
     try {
         const canUpdate = await canEdit(req.body.username, Number(id), "item");
@@ -84,10 +85,10 @@ const activate = async (req: Request, res: Response, next: NextFunction) => {
             next(ApiError.badRequest("User has to be owner of list to update item of the list"));
             return;
         } else {
-            const item = await itemService.updateItem(Number(id), 'active');
+            const item = await itemService.updateItem(Number(id), title, description, deadline, status);
             if (item) {
                 return res.json({
-                    message: "Status set to 'active'",
+                    message: "Item updated",
                     item: item
                 })
             } else {
@@ -99,56 +100,4 @@ const activate = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-const cancel = async (req: Request, res: Response, next: NextFunction) => {
-
-    const { id } = req.params;
-
-    try {
-        const canUpdate = await canEdit(req.body.username, Number(id), "item");
-
-        if (!canUpdate) {
-            next(ApiError.badRequest("User has to be owner of list to update item of the list"));
-            return;
-        } else {
-            const item = await itemService.updateItem(Number(id), 'cancelled');
-            if (item) {
-                return res.json({
-                    message: "Status set to 'cancelled'",
-                    item: item
-                })
-            } else {
-                throw ApiError.internalServerError("Could not update item");
-            }
-        }
-    } catch (err) {
-        next(err);
-    }
-}
-
-const done = async (req: Request, res: Response, next: NextFunction) => {
-
-    const { id } = req.params;
-
-    try {
-        const canUpdate = await canEdit(req.body.username, Number(id), "item");
-
-        if (!canUpdate) {
-            next(ApiError.badRequest("User has to be owner of list to update item of the list"));
-            return;
-        } else {
-            const item = await itemService.updateItem(Number(id), 'done');
-            if (item) {
-                return res.json({
-                    message: "Status set to 'done'",
-                    item: item
-                })
-            } else {
-                throw ApiError.internalServerError("Could not update item");
-            }
-        }
-    } catch (err) {
-        next(err);
-    }
-}
-
-export default { createItem, activate, cancel, done };
+export default { createItem, updateItem };

@@ -65,8 +65,8 @@ async function canEdit(username: string, listId: number) {
 
         console.log(lists);
 
-        for (var i = 0; i < lists.length; i++) {
-            if (lists[i].id == listId)
+        for (let i = 0; i < lists.length; i++) {
+            if (lists[i].id === listId)
                 return true;
         }
         return false;
