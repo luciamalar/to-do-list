@@ -28,11 +28,9 @@ const assignListToUser = async (user: User, list: List) => {
 
     (await user.lists).push(list);
 
-    try {
-        await userRepo.save(user);
-    } catch {
+    await userRepo.save(user).catch((err) => {
         throw ApiError.internalServerError(`Error while assigning list: ${list.title} to user: ${user.username}`);
-    }
+    });
 
     return list;
 
@@ -40,25 +38,24 @@ const assignListToUser = async (user: User, list: List) => {
 
 const getListById = async (listId: number) => {
     const listRepo = getRepository(List);
-    try {
-        const list: List = await listRepo.findOne({ where: { id: listId } });
-        if (list)
-            return list;
-        else
-            throw ApiError.notFound(`No list found of id: ${listId}.`)
-    } catch (err) {
-        throw err;
+
+    const list: List = await listRepo.findOne({ where: { id: listId } });
+    if (list) {
+        return list;
+    }
+    else {
+        throw ApiError.notFound(`No list found of id: ${listId}.`);
     }
 }
 
 const getListsOfUser = async (username: string) => {
 
     const userRepo = getRepository(User);
-    try {
-        const user: User = await userRepo.findOne({ where: { username: username } });
-        return user.lists;
 
-    } catch (err) {
+    const user: User = await userRepo.findOne({ where: { username: username } });
+    if (user) {
+        return user.lists;
+    } else {
         throw ApiError.notFound(`No lists found for user: ${username}.`);
     }
 }

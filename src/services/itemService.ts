@@ -15,7 +15,6 @@ const assignItemtoList = async (item: Item, list: List) => {
         return list.items;
     } catch (err) {
         throw ApiError.internalServerError(`Error while assigning item: ${item.title} to list: ${list.title}`);
-
     }
 }
 
@@ -25,7 +24,11 @@ const getItemsOfList = async (listId: number) => {
     let list: List;
     try {
         list = await listRepo.findOne({ where: { id: listId } });
-        return list.items;
+        if (list) {
+            return list.items;
+        } else {
+            throw ApiError.notFound(`No list found of id: ${listId}.`);
+        }
     } catch (err) {
         throw ApiError.notFound(`No items found for list: ${list.title}.`);
     }
@@ -42,12 +45,9 @@ const createListItem = async (title: string, description: string, deadline: Date
         item.status = status,
         item.list = Promise.resolve(list);
 
-    try {
-        item = await itemRepo.save(item);
-        return item;
-    } catch (err) {
-        throw ApiError.internalServerError("Error while creating new list");
-    }
+    return await itemRepo.save(item).catch((err) => {
+        throw ApiError.internalServerError(err.message);
+    });
 }
 
 const getItemById = async (itemId: number) => {
@@ -64,9 +64,13 @@ const getAllItemsOfList = async (listId: number) => {
     let list: List;
     try {
         list = await listRepo.findOne({ where: { id: listId } });
-        return list.items
+        if (list) {
+            return list.items
+        } else {
+            throw ApiError.notFound(`No list found of id: ${listId}.`);
+        }
     } catch (err) {
-        throw ApiError.notFound(`No items found}.`);
+        throw ApiError.notFound(`No items found.`);
     }
 }
 

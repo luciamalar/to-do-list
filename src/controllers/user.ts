@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import logging from '../utils/logging';
 import bcryptjs from 'bcryptjs';
 import userService from "../services/userService";
 import ApiError from "../error/apiError";
@@ -13,25 +12,22 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 
     bcryptjs.hash(password, 10, (hashError, hash) => {
         if (hashError) {
-            next(ApiError.internalServerError(hashError));
-            return;
+            throw ApiError.internalServerError(hashError.message);
         }
         userService.createUser(username, hash).then((user) => {
             if (user) {
-                logging.info(NAMESPACE, "User registered", user);
                 return res.json({
                     message: "User registered"
                 })
             }
         }).catch((err) => {
             next(err);
-            return;
-        });
+        })
     })
 };
 
 //login existed user and get the token
-const login = async (req: Request, res: Response, next: NextFunction) => {
+const login = async (req: Request, res: Response) => {
     let { username, password } = await req.body;
 
     await userService.loginUser(username, password).then((token) => {
@@ -40,21 +36,20 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
             token: token
         })
     }).catch((err) => {
-        next(err);
-    });
+        throw err;
+    })
 };
 
 //get each user from the database and not show their passwords
-const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
-    userService.getAllUsers().then((users) => {
-        logging.info(NAMESPACE, "Users found", users);
+const getAllUsers = async (req: Request, res: Response) => {
+    await userService.getAllUsers().then((users) => {
         return res.json({
             message: "Users found",
             users: users
         })
     }).catch((err) => {
-        next(err);
-    });
+        throw err;
+    })
 };
 
 export default { register, login, getAllUsers };

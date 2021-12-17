@@ -1,4 +1,4 @@
-import e, { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import itemService from "../services/itemService";
 import listService from "../services/listService";
 import userService from "../services/userService";
@@ -9,83 +9,62 @@ import { User } from "../entity/User";
 
 const NAMESPACE = "List";
 
-const createList = async (req: Request, res: Response, next: NextFunction) => {
+const createList = async (req: Request, res: Response) => {
 
     const title = await req.body.title;
 
-    try {
-        let user: User = await userService.getUser(req.body.username);
-        let list: List = await listService.createList(title, user);
-        let newList: List = await listService.assignListToUser(user, list);
+    let user: User = await userService.getUser(req.body.username);
+    let list: List = await listService.createList(title, user);
+    let newList: List = await listService.assignListToUser(user, list);
 
-        if (newList) {
-            return res.json({
-                message: `List: ${newList.title} created and assigned to user: ${user.username}`,
-                listId: newList.id
-            });
-        } else {
-            throw ApiError.internalServerError("Could not attach list to user");
-        }
-
-    } catch (err) {
-        next(err);
+    if (newList) {
+        return res.json({
+            message: `List: ${newList.title} created and assigned to user: ${user.username}`,
+            listId: newList.id
+        });
+    } else {
+        throw ApiError.internalServerError("Could not attach list to user");
     }
 }
 
-const showListWithItems = async (req: Request, res: Response, next: NextFunction) => {
+const showListWithItems = async (req: Request, res: Response) => {
     const { id } = req.params;
 
-    try {
-
-        const list: List = await listService.getListById(Number(id));
-        const items: Item[] = await itemService.getAllItemsOfList(Number(id));
-        return res.json({
-            message: "List found",
-            list: list,
-            items: items
-        })
-
-    } catch (err) {
-        next(err);
-    }
+    const list: List = await listService.getListById(Number(id));
+    const items: Item[] = await itemService.getAllItemsOfList(Number(id));
+    return res.json({
+        message: "List found",
+        list: list,
+        items: items
+    })
 
 }
 
 async function canEdit(username: string, listId: number) {
 
-    try {
-
-        const lists = await listService.getListsOfUser(username);
-        for (let i = 0; i < lists.length; i++) {
-            if (lists[i].id === listId)
-                return true;
-        }
-        return false;
-    } catch (err) {
-        throw ApiError.internalServerError(err);
+    const lists = await listService.getListsOfUser(username);
+    for (let i = 0; i < lists.length; i++) {
+        if (lists[i].id === listId)
+            return true;
     }
+    return false;
 }
 
-const shareList = async (req: Request, res: Response, next: NextFunction) => {
+const shareList = async (req: Request, res: Response) => {
     const { userId } = await req.body;
     const { id } = req.params;
 
-    try {
-        const canShare = await canEdit(req.body.username, Number(id));
+    const canShare = await canEdit(req.body.username, Number(id));
 
-        if (!canShare) {
-            next(ApiError.badRequest("User has to be owner of list to share it"));
-            return;
-        } else {
-            const user = await listService.shareList(Number(id), Number(userId));
-            if (user) {
-                return res.json({
-                    message: `List was successfully shared to user`
-                })
-            }
+    if (!canShare) {
+        throw ApiError.badRequest("User has to be owner of list to share it");
+    } else {
+        const list = await listService.shareList(Number(id), Number(userId));
+        if (list) {
+            return res.json({
+                message: `List was successfully shared to user`
+            })
         }
-    } catch (err) {
-        next(err);
     }
 }
 

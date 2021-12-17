@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import "reflect-metadata";
 import swaggerUI from 'swagger-ui-express';
 import swaggerJSDoc from 'swagger-jsdoc';
@@ -147,7 +147,11 @@ const loadRoutes = async (app: express.Application) => {
     app.post('/auth/register',
         registerValidator,
         expressValidator,
-        user_controller.register
+        async (req: Request, res: Response, next: NextFunction) => {
+            user_controller.register(req, res, next).catch((err) => {
+                next(err);
+            })
+        }
     );
 
     /**
@@ -184,7 +188,11 @@ const loadRoutes = async (app: express.Application) => {
     app.post('/auth/login',
         loginValidator,
         expressValidator,
-        user_controller.login
+        async (req: Request, res: Response, next: NextFunction) => {
+            user_controller.login(req, res).catch((err) => {
+                next(err);
+            })
+        }
     );
 
     /**
@@ -227,7 +235,11 @@ const loadRoutes = async (app: express.Application) => {
         checkJwt,
         createListValidator,
         expressValidator,
-        list_controller.createList
+        async (req: Request, res: Response, next: NextFunction) => {
+            list_controller.createList(req, res).catch((err) => {
+                next(err);
+            })
+        }
     );
 
     /**
@@ -292,7 +304,11 @@ const loadRoutes = async (app: express.Application) => {
         checkJwt,
         createItemValidator,
         expressValidator,
-        item_controller.createItem
+        async (req: Request, res: Response, next: NextFunction) => {
+            item_controller.createItem(req, res).catch((err) => {
+                next(err);
+            })
+        }
     );
 
     /**
@@ -340,7 +356,11 @@ const loadRoutes = async (app: express.Application) => {
         checkJwt,
         flagItemValidator,
         expressValidator,
-        item_controller.updateItem
+        async (req: Request, res: Response, next: NextFunction) => {
+            item_controller.updateItem(req, res).catch((err) => {
+                next(err);
+            })
+        }
     );
 
     /**
@@ -376,7 +396,11 @@ const loadRoutes = async (app: express.Application) => {
     app.get('/list/:id',
         showListValidator,
         expressValidator,
-        list_controller.showListWithItems
+        async (req: Request, res: Response, next: NextFunction) => {
+            list_controller.showListWithItems(req, res).catch((err) => {
+                next(err);
+            })
+        }
     );
 
     /**
@@ -417,7 +441,11 @@ const loadRoutes = async (app: express.Application) => {
         checkJwt,
         shareListValidator,
         expressValidator,
-        list_controller.shareList
+        async (req: Request, res: Response, next: NextFunction) => {
+            list_controller.shareList(req, res).catch((err) => {
+                next(err);
+            })
+        }
     );
 };
 

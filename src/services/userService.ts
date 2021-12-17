@@ -8,15 +8,17 @@ const NAMESPACE = "User";
 
 const createUser = async (username: string, password: string) => {
     const userRepo = getRepository(User);
-    const userExists = getUser(username);
+    const userExists = await getUser(username);
+
     if (userExists) {
         throw ApiError.badRequest("User already exists");
+    } else {
+        let user = userRepo.create({ username, password });
+        await userRepo.save(user).then((user1) => user = user1).catch((err) => {
+            throw ApiError.internalServerError(err.message);
+        });
+        return user;
     }
-    let user = userRepo.create({ username, password });
-    await userRepo.save(user).then((user1) => user = user1).catch((err) => {
-        throw ApiError.internalServerError(err.message);
-    });
-    return user;
 }
 
 const loginUser = async (username: string, password: string) => {

@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import listService from "../services/listService";
 import itemService from "../services/itemService";
 import ApiError from "../error/apiError";
@@ -30,66 +30,57 @@ async function canEdit(username: string, id: number, type: string) {
             }
             return false;
         } else {
-            throw ApiError.badRequest("Incorrect type value. Can be item or list")
+            throw ApiError.badRequest("Incorrect type value. Must be item or list")
         }
     } catch (err) {
         throw err;
     }
 }
 
-const createItem = async (req: Request, res: Response, next: NextFunction) => {
+const createItem = async (req: Request, res: Response) => {
 
     const { listId, title, description, deadline, status } = await req.body;
 
-    try {
-        const canCreate = await canEdit(req.body.username, listId, "list");
-        if (!canCreate) {
-            next(ApiError.badRequest("User has to be owner of list to create item of the list"));
-            return;
-        } else {
-            let list: List = await listService.getListById(listId);
-            let item: Item = await itemService.createListItem(title, description, deadline, status, list);
-            let newItem: Item[] = await itemService.assignItemtoList(item, list);
+    const canCreate = await canEdit(req.body.username, listId, "list");
+    if (!canCreate) {
+        throw ApiError.badRequest("User has to be owner of list to create item of the list");
+    } else {
+        let list: List = await listService.getListById(listId);
+        let item: Item = await itemService.createListItem(title, description, deadline, status, list);
+        let newItem: Item[] = await itemService.assignItemtoList(item, list);
 
-            if (newItem) {
-                return res.json({
-                    message: `Item: ${item.title} attached to list: ${list.title}`,
-                    itemId: item.id
-                })
-            } else {
-                throw ApiError.internalServerError("Could not attach item to list");
-            }
+        if (newItem) {
+            return res.json({
+                message: `Item: ${item.title} attached to list: ${list.title}`,
+                itemId: item.id
+            })
+        } else {
+            throw ApiError.internalServerError("Could not attach item to list");
         }
-    } catch (err) {
-        next(err);
     }
 }
 
-const updateItem = async (req: Request, res: Response, next: NextFunction) => {
+const updateItem = async (req: Request, res: Response) => {
 
     const { id } = req.params;
     const { title, description, deadline, status } = await req.body;
 
-    try {
-        const canUpdate = await canEdit(req.body.username, Number(id), "item");
+    const canUpdate = await canEdit(req.body.username, Number(id), "item");
 
-        if (!canUpdate) {
-            next(ApiError.badRequest("User has to be owner of list to update item of the list"));
-            return;
+    if (!canUpdate) {
+        throw ApiError.badRequest("User has to be owner of list to update item of the list");
+    } else {
+        const item = await itemService.updateItem(Number(id), title, description, deadline, status);
+        if (item) {
+            return res.json({
+                message: "Item updated",
+                item: item
+            })
         } else {
-            const item = await itemService.updateItem(Number(id), title, description, deadline, status);
-            if (item) {
-                return res.json({
-                    message: "Item updated",
-                    item: item
-                })
-            } else {
-                throw ApiError.internalServerError("Could not update item");
-            }
+            throw ApiError.internalServerError("Could not update item");
         }
-    } catch (err) {
-        next(err);
     }
+
 }
 
 export default { createItem, updateItem };
