@@ -1,9 +1,7 @@
 import { getRepository } from "typeorm";
 import { Item } from "../entity/Item";
 import { List } from "../entity/List";
-import { User } from "../entity/User";
 import ApiError from "../error/apiError";
-import userService from "./userService";
 
 const NAMESPACE = "Item";
 

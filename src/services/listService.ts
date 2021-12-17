@@ -10,7 +10,6 @@ const createList = async (title: string, user: User) => {
     const listRepo = getRepository(List);
     const foundlist: List = await listRepo.findOne({ where: { title: title } });
 
-    console.log(foundlist);
     //check if list with that title already exists
     if (foundlist) {
         throw ApiError.badRequest(`List with this title already exists`);

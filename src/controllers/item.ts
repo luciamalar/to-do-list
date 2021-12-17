@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import logging from '../utils/logging';
 import listService from "../services/listService";
 import itemService from "../services/itemService";
 import ApiError from "../error/apiError";
+import { List } from "../entity/List";
+import { Item } from "../entity/Item";
 
 const NAMESPACE = "Item";
 
@@ -12,7 +13,7 @@ async function canEdit(username: string, id: number, type: string) {
         const lists = await listService.getListsOfUser(username);
         const item = await itemService.getItemById(id);
 
-        if (!item && type === "item") {
+        if (!item && type === 'item') {
             throw ApiError.badRequest("Item does not exist");
         }
 
@@ -46,28 +47,19 @@ const createItem = async (req: Request, res: Response, next: NextFunction) => {
             next(ApiError.badRequest("User has to be owner of list to create item of the list"));
             return;
         } else {
-            listService.getListById(listId).then((list) => {
-                itemService.createListItem(title, description, deadline, status, list).then((item) => {
-                    itemService.assignItemtoList(item, list).then((response) => {
-                        if (response) {
-                            return res.json({
-                                message: `Item: ${item.title} attached to list: ${list.title}`,
-                                itemId: item.id
-                            })
-                        } else {
-                            throw ApiError.internalServerError("Could not attach item to list");
-                        }
-                    }).catch((err) => {
-                        throw err;
-                    });
-                }).catch((err) => {
-                    throw err;
-                });
-            }).catch((err) => {
-                throw err;
-            })
-        }
+            let list: List = await listService.getListById(listId);
+            let item: Item = await itemService.createListItem(title, description, deadline, status, list);
+            let newItem: Item[] = await itemService.assignItemtoList(item, list);
 
+            if (newItem) {
+                return res.json({
+                    message: `Item: ${item.title} attached to list: ${list.title}`,
+                    itemId: item.id
+                })
+            } else {
+                throw ApiError.internalServerError("Could not attach item to list");
+            }
+        }
     } catch (err) {
         next(err);
     }

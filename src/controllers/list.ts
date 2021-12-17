@@ -3,9 +3,9 @@ import itemService from "../services/itemService";
 import listService from "../services/listService";
 import userService from "../services/userService";
 import { List } from "../entity/List";
-import { User } from "../entity/User";
 import { Item } from "../entity/Item";
 import ApiError from "../error/apiError";
+import { User } from "../entity/User";
 
 const NAMESPACE = "List";
 
@@ -14,30 +14,24 @@ const createList = async (req: Request, res: Response, next: NextFunction) => {
     const title = await req.body.title;
 
     try {
-        userService.getUser(req.body.username).then((user) => {
-            listService.createList(title, user).then((list) => {
-                listService.assignListToUser(user, list).then((newList) => {
-                    if (newList) {
-                        return res.json({
-                            message: `List: ${newList.title} created and assigned to user: ${user.username}`,
-                            listId: newList.id
-                        });
-                    } else {
-                        throw ApiError.internalServerError("Could not attach list to user");
-                    }
-                }).catch((err) => {
-                    throw err;
-                })
-            }).catch((err) => {
-                throw err;
+        let user: User = await userService.getUser(req.body.username);
+        let list: List = await listService.createList(title, user);
+        let newList: List = await listService.assignListToUser(user, list);
+
+        if (newList) {
+            return res.json({
+                message: `List: ${newList.title} created and assigned to user: ${user.username}`,
+                listId: newList.id
             });
-        }).catch((err) => {
-            throw err;
-        });
+        } else {
+            throw ApiError.internalServerError("Could not attach list to user");
+        }
+
     } catch (err) {
         next(err);
     }
 }
+
 const showListWithItems = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
 
@@ -62,9 +56,6 @@ async function canEdit(username: string, listId: number) {
     try {
 
         const lists = await listService.getListsOfUser(username);
-
-        console.log(lists);
-
         for (let i = 0; i < lists.length; i++) {
             if (lists[i].id === listId)
                 return true;

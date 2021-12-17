@@ -1,7 +1,6 @@
 import express from 'express';
 import log from './utils/logging';
 import "reflect-metadata";
-
 import config from '../config/config';
 import loadDB from './loaders/database';
 import loadExpress from './loaders/express';
