@@ -122,7 +122,7 @@ async function canEdit(username: string, itemId: number) {
 
     const lists = await listService.getListsOfUser(username);
     const item = await itemService.getItemById(itemId);
-
+            
     // if item does not exist, return error
     if (!item) {
         throw ApiError.badRequest("Item does not exist");

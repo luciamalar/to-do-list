@@ -17,13 +17,13 @@ const createList = async (req: Request, res: Response) => {
     const title = await req.body.title;
 
     // Get logged in user
-    let user: User = await userService.getUser(req.body.username);
+    const user: User = await userService.getUser(req.body.username);
 
     // Create new list
-    let list: List = await listService.createList(title, user);
+    const list: List = await listService.createList(title, user);
 
     // Assign new list to logged in user
-    let newList: List = await listService.assignListToUser(user, list);
+    const newList: List = await listService.assignListToUser(user, list);
 
     if (newList) {
         return res.json({

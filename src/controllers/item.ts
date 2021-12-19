@@ -20,13 +20,13 @@ const createItem = async (req: Request, res: Response) => {
     if (canCreate) {
 
         // Get list to which we want to create new item
-        let list: List = await listService.getListById(listId);
+        const list: List = await listService.getListById(listId);
 
         // Create new item
-        let item: Item = await itemService.createListItem(title, description, deadline, status, list);
+        const item: Item = await itemService.createListItem(title, description, deadline, status, list);
 
         // Attach new created item to given list
-        let newItem: Item[] = await itemService.assignItemtoList(item, list);
+        const newItem: Item[] = await itemService.assignItemtoList(item, list);
 
         if (newItem) {
             return res.json({

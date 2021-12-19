@@ -10,7 +10,7 @@ const NAMESPACE = "User";
 ////////////////////////////////////////////////////////////////////////////////
 const register = async (req: Request, res: Response, next: NextFunction) => {
 
-    let { username, password } = await req.body;
+    const { username, password } = await req.body;
 
     // Hash users password
     bcryptjs.hash(password, 10, (hashError, hash) => {
@@ -34,7 +34,7 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 // Login existed user and get token
 /////////////////////////////////////////////////////////////////
 const login = async (req: Request, res: Response) => {
-    let { username, password } = await req.body;
+    const { username, password } = await req.body;
 
     await userService.loginUser(username, password).then((token) => {
         return res.json({
