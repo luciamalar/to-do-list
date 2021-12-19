@@ -7,46 +7,25 @@ import { Item } from "../entity/Item";
 
 const NAMESPACE = "Item";
 
-async function canEdit(username: string, id: number, type: string) {
-
-    try {
-        const lists = await listService.getListsOfUser(username);
-        const item = await itemService.getItemById(id);
-
-        if (!item && type === 'item') {
-            throw ApiError.badRequest("Item does not exist");
-        }
-
-        if (type === 'item') {
-            for (let i = 0; i < lists.length; i++) {
-                if ((await item.list).id === lists[i].id)
-                    return true;
-            }
-            return false;
-        } else if (type === 'list') {
-            for (let i = 0; i < lists.length; i++) {
-                if (lists[i].id === id)
-                    return true;
-            }
-            return false;
-        } else {
-            throw ApiError.badRequest("Incorrect type value. Must be item or list")
-        }
-    } catch (err) {
-        throw err;
-    }
-}
-
+//////////////////////////////////////////////////////////////////////////////////////
+// Creates new item of given list
+/////////////////////////////////////////////////////////////////////////////////////
 const createItem = async (req: Request, res: Response) => {
 
     const { listId, title, description, deadline, status } = await req.body;
 
-    const canCreate = await canEdit(req.body.username, listId, "list");
-    if (!canCreate) {
-        throw ApiError.badRequest("User has to be owner of list to create item of the list");
-    } else {
+    // Checks if user is owner of list we want to create item to
+    const canCreate = await listService.canEdit(req.body.username, listId);
+
+    if (canCreate) {
+
+        // Get list to which we want to create new item
         let list: List = await listService.getListById(listId);
+
+        // Create new item
         let item: Item = await itemService.createListItem(title, description, deadline, status, list);
+
+        // Attach new created item to given list
         let newItem: Item[] = await itemService.assignItemtoList(item, list);
 
         if (newItem) {
@@ -57,19 +36,26 @@ const createItem = async (req: Request, res: Response) => {
         } else {
             throw ApiError.internalServerError("Could not attach item to list");
         }
+    } else {
+        throw ApiError.badRequest("User has to be owner of list to create item of the list");
     }
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+// Updates item with provided properties
+////////////////////////////////////////////////////////////////////////////////////////////
 const updateItem = async (req: Request, res: Response) => {
 
     const { id } = req.params;
     const { title, description, deadline, status } = await req.body;
 
-    const canUpdate = await canEdit(req.body.username, Number(id), "item");
+    // Checks if user is owner the list to which given item belongs
+    const canUpdate = await itemService.canEdit(req.body.username, Number(id));
 
-    if (!canUpdate) {
-        throw ApiError.badRequest("User has to be owner of list to update item of the list");
-    } else {
+    if (canUpdate) {
+
+        // Update item with given properties
         const item = await itemService.updateItem(Number(id), title, description, deadline, status);
         if (item) {
             return res.json({
@@ -79,6 +65,8 @@ const updateItem = async (req: Request, res: Response) => {
         } else {
             throw ApiError.internalServerError("Could not update item");
         }
+    } else {
+        throw ApiError.badRequest("User has to be owner of list to update item of the list");
     }
 
 }

@@ -2,12 +2,17 @@ import { getRepository } from "typeorm";
 import { Item } from "../entity/Item";
 import { List } from "../entity/List";
 import ApiError from "../error/apiError";
+import listService from "./listService";
 
 const NAMESPACE = "Item";
 
+////////////////////////////////////////////////////////////////////////////////
+// Service to assign given item to given list
+////////////////////////////////////////////////////////////////////////////////
 const assignItemtoList = async (item: Item, list: List) => {
     const listRepo = getRepository(List);
 
+    // Push item to lists items array
     (await list.items).push(item);
 
     try {
@@ -18,6 +23,9 @@ const assignItemtoList = async (item: Item, list: List) => {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Service to get all items of provided list
+////////////////////////////////////////////////////////////////////////////////
 const getItemsOfList = async (listId: number) => {
 
     const listRepo = getRepository(List);
@@ -34,11 +42,15 @@ const getItemsOfList = async (listId: number) => {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Service to create new item of a list
+////////////////////////////////////////////////////////////////////////////////
 const createListItem = async (title: string, description: string, deadline: Date, status: string, list: List) => {
     const itemRepo = getRepository(Item);
 
     let item = new Item();
 
+    // Assign provided properties to new created item 
     item.title = title,
         item.description = description,
         item.deadline = deadline,
@@ -50,6 +62,9 @@ const createListItem = async (title: string, description: string, deadline: Date
     });
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Service to get item by its id
+////////////////////////////////////////////////////////////////////////////////
 const getItemById = async (itemId: number) => {
     const itemRepo = getRepository(Item);
 
@@ -58,6 +73,9 @@ const getItemById = async (itemId: number) => {
     });
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Service to get all items of provided list
+////////////////////////////////////////////////////////////////////////////////
 const getAllItemsOfList = async (listId: number) => {
     const listRepo = getRepository(List);
 
@@ -74,6 +92,9 @@ const getAllItemsOfList = async (listId: number) => {
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Service to update item with provided properties
+////////////////////////////////////////////////////////////////////////////////
 const updateItem = async (itemId: number, title: string, description: string, deadline: Date, status: string) => {
     const itemRepo = getRepository(Item);
 
@@ -83,6 +104,7 @@ const updateItem = async (itemId: number, title: string, description: string, de
         throw ApiError.badRequest("Item does not exist");
     }
 
+    // Update all properties of given item
     item.title = title,
         item.description = description,
         item.deadline = deadline,
@@ -93,6 +115,28 @@ const updateItem = async (itemId: number, title: string, description: string, de
     });
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Check if a user can edit an entity of type item
+////////////////////////////////////////////////////////////////////////////////
+async function canEdit(username: string, itemId: number) {
+
+    const lists = await listService.getListsOfUser(username);
+    const item = await itemService.getItemById(itemId);
+
+    // if item does not exist, return error
+    if (!item) {
+        throw ApiError.badRequest("Item does not exist");
+    }
+
+    // iterate thru the users lists and check, if the parent list of the item we 
+    // are looking for is among them
+    for (let i = 0; i < lists.length; i++) {
+        if ((await item.list).id === lists[i].id)
+            return true;
+    }
+    return false;
+}
+
 
 const itemService = {
     createListItem,
@@ -100,7 +144,8 @@ const itemService = {
     updateItem,
     getItemsOfList,
     getItemById,
-    getAllItemsOfList
+    getAllItemsOfList,
+    canEdit
 }
 
 export default itemService;

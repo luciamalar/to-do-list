@@ -5,15 +5,19 @@ import ApiError from "../error/apiError";
 
 const NAMESPACE = "User";
 
-//register new user and store him to the database
+////////////////////////////////////////////////////////////////////////////////
+// Register new user and store him to the database
+////////////////////////////////////////////////////////////////////////////////
 const register = async (req: Request, res: Response, next: NextFunction) => {
 
     let { username, password } = await req.body;
 
+    // Hash users password
     bcryptjs.hash(password, 10, (hashError, hash) => {
         if (hashError) {
             throw ApiError.internalServerError(hashError.message);
         }
+        // Create new user with hashed password
         userService.createUser(username, hash).then((user) => {
             if (user) {
                 return res.json({
@@ -26,7 +30,9 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
     })
 };
 
-//login existed user and get the token
+/////////////////////////////////////////////////////////////////
+// Login existed user and get token
+/////////////////////////////////////////////////////////////////
 const login = async (req: Request, res: Response) => {
     let { username, password } = await req.body;
 
@@ -40,16 +46,4 @@ const login = async (req: Request, res: Response) => {
     })
 };
 
-//get each user from the database and not show their passwords
-const getAllUsers = async (req: Request, res: Response) => {
-    await userService.getAllUsers().then((users) => {
-        return res.json({
-            message: "Users found",
-            users: users
-        })
-    }).catch((err) => {
-        throw err;
-    })
-};
-
-export default { register, login, getAllUsers };
+export default { register, login };
